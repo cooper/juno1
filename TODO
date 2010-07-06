@@ -1,0 +1,42 @@
+#####################################################################
+#                The Perl Internet Relay Chat Daemon                #
+#              _                     _              _               # 
+#             (_)                   (_)            | |              #
+#              _ _   _ _ __   ___    _ _ __ ___  __| |              #
+#             | | | | | '_ \ / _ \  | | '__/ __|/ _` |              #
+#             | | |_| | | | | (_) | | | | | (__| (_| |              #
+#             | |\__,_|_| |_|\___/  |_|_|  \___|\__,_|              #
+#            _/ |                                                   #
+#           |__/                                                    #
+#                                                                   #
+#####################################################################
+
+TODO
+---------------------------------------------------------------------
+
+Modes e and I (ban exception and invite exception)
+I'm going to add a mode for oper override to prevent accidental abuse. Whether or not you can use it should be up to your o-line in the config.
+The linking protocol doesn't send privmsgs... we need to send to servers with a client involved only for ethical reasons.
+Fix a few linking protocol bugs (mainly in TOPIC command)
+Write services to show off my linking protocol
+G-line (a global kline) I plan on sending a KLINE command to all servers and writing a k-line to the config, but we'll see
+and a lot more that I haven't decided (yet).
+
+
+What I've done
+---------------------------------------------------------------------
+
+We actually check if an rDNS resolves now, and if not use the user's IP address instead.
+Prefixes ~ & and % (owner, admin, and halfop +q +a and +h)
+Multi-prefix names output
+CAP reply
+Channel link (+L). if the population limit (+l) is reached, forward you to the linked channel (if there aren't double links)
+in viewing of ban and mute list (/mode b|Z), we show full hosts instead of the server name (... @ that)
+We now check if a ban/mute mask is valid (fail for not checking before) +b fgt = fgt!*@* +b fgt@* = *!fgt@* +Z *@* = *!*@*
+Channel mode +Z, mutes. (Similar to charybdis's quiet, +q)
+Now checks for bans and mutes on privmsg.. (fail for not checking for bans before)
+Fixed kline, and added the ability for operators to kline via IRC. After a mask is klined, existing users that match the mask are killed.
+Almost completely rewrote the linking protocol. Now sends and recieves bursts properly, MODE, TOPIC, JOIN, and PART commands. (PRIVMSG is being worked on)
+Now responds to LAG pings from XChat
+Network name configuration option
+and a lot of bug fixes
