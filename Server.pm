@@ -143,7 +143,7 @@ sub setupaslocal {
 			
   }
 
-  # Burst channel information
+  # Burst channel modes and topics
   foreach my $channel (values(%{Utils::channels()})) {
     # :server.name BC #channel creationtime modestr modeargs
     # as of June 27th 2010, we burst multiple prefixes as well as channel modes
@@ -184,6 +184,17 @@ sub setupaslocal {
 		$channel->{name},
 		"+$cmodes",
 		ltrim($cargs))."\r\n");
+
+	if (defined($channel->{topic})) {
+	$this->senddata(join(' ',
+		":".$this->parent->name,
+		"TOPIC",
+		$channel->{name},
+		$channel->{topicsetter},
+		$channel->{topicsettime},
+		":".$channel->{topic})."\r\n");
+	}
+
   }
   $this->senddata(join(' ', ":".$server->name." EOS\r\n"));
 }
