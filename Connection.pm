@@ -45,10 +45,11 @@ sub new {
 		if ($res eq $ip) { # if the resolution of the rDNS matches the IP, use the rDNS as their host
 			$host = $rdns;
 		}
-		else { $host = $ip.".ip"; } # if the rDNS is fake...
+		else { $host = $ip; } # if the rDNS is fake...
 
 	$this->{'host'}		= $host;
 	$this->{'host_ip'}	= $ip;
+	$this->{'time_create'}	= time;
 
   bless($this, $class);
   return $this;

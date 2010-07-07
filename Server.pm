@@ -110,7 +110,6 @@ sub setupaslocal {
 		       "Px1",
 		       ":".$server->description)."\r\n");
   }
-  $this->senddata(join(' ', ":".$server->name." BURST\r\n"));
   foreach my $childserver ($server->children()) {
     $this->spewchildren($childserver);
   }
@@ -122,17 +121,26 @@ sub setupaslocal {
 
   # As it is, we will merely use the special burst user command
   foreach my $user (values(%{Utils::users()})) {
+
+# I was so excited when i erased BU and BC! :D
     $this->senddata(join(' ',
-			 ":".$user->server->name,
-			 "BU", # Burst User. Only place of generation.
-			 $user->nick,
-			 $user->username,
-			 $user->host,
-			 $user->genmodestr,
-			 ":".$user->ircname)."\r\n");
-			if ($user->ismode('o')) {
-				$this->senddata(join(' ', ":".$user->nick." OPER\r\n"));
-			}
+			"NICK",
+			$user->nick,
+			$user->server->hops,
+			$user->time_create,
+			$user->username,
+			$user->host,
+			$user->server->name,
+			"0",
+			":".$user->ircname)."\r\n");
+	foreach my $channel (values(%{$user->channels()})) {
+		$this->senddata(join(' ',
+			":".$user->nick,
+			"JOIN",
+			$channel->{'name'},
+			$channel->{'jointime'}->{$user->nick})."\r\n");
+	}
+			
   }
 
   # Burst channel information
@@ -156,24 +164,28 @@ sub setupaslocal {
 		$cmodes = $cmodes."l";
 		$cargs = $cargs." ".$channel->{limit};
 	}
+	if ($channel->ismode("L")) { # july 7 2010 support for link added 
+		$cmodes = $cmodes."L";
+		$cargs = $cargs." ".$channel->{link};
+	}
 	foreach(keys(%{$channel->{'bans'}})) { # june 27 2010 support for bans added 
 		$cmodes = $cmodes."b";
 		$cargs = $cargs." ".$_;
 	}
-    $this->senddata(join(' ',
-			 ":".$this->parent->name,
-			 "BC", # Burst Channel. Only place of generation.
-			 $channel->{'name'},
-			 $channel->{'creation'},
-			 scalar($channel->users()),
-			 "+$cmodes",
-			 ltrim($cargs),
-			 ":NAMES",
-			 map { ($channel->isowner($_)?"~":"").($channel->isadmin($_)?"&":"").($channel->isop($_)?"@":"").($channel->ishalfop($_)?"%":"").($channel->hasvoice($_)?"+":"").$_->nick } $channel->users(),
-			)."\r\n"
-		   );
+	foreach(keys(%{$channel->{'mutes'}})) { # july 7 2010 support for mutes added 
+		$cmodes = $cmodes."Z";
+		$cargs = $cargs." ".$_;
+	}
+# I was so excited when i erased BU and BC! :D
+
+	$this->senddata(join(' ',
+		":".$this->parent->name,
+		"MODE",
+		$channel->{name},
+		"+$cmodes",
+		ltrim($cargs))."\r\n");
   }
-  $this->senddata(join(' ', ":".$server->name." ENDBURST\r\n"));
+  $this->senddata(join(' ', ":".$server->name." EOS\r\n"));
 }
 
 sub spewchildren {

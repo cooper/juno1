@@ -83,6 +83,7 @@ sub new {
   $this->{'user'}        = $connection->{'user'};
   $this->{'host'}        = $connection->{'host'};
   $this->{'ip'} 	 = $connection->{'host_ip'};
+  $this->{'time_create'} = $connection->{'time_create'};
   $this->{'ircname'}     = $connection->{'ircname'};
   $this->{'server'}      = $connection->{'server'};
   $this->{'connected'}   = $connection->{'connected'};
@@ -596,7 +597,7 @@ sub handle_kline {
 					open CONF, "<server.conf" or $this->privmsgnotice("NOTICE",$this->server,"Error reading file: $!");
 					my $current = "";
 					while (my $line = <CONF>) {
-						if (lc($line) eq lc("K:$ident:$host:$breason\n") {
+						if (lc($line) eq lc("K:$ident:$host:$breason\n")) {
 							# removing the kill line from the config
 						} else { $current = $current.$line; } # or leave the line if it's not what we're looking for
 					}
@@ -1131,7 +1132,14 @@ sub server {
   my $this = shift;
   return $this->{'server'};
 }
-
+sub channels {
+  my $this = shift;
+  return $this->{'channels'};
+}
+sub time_create {
+  my $this = shift;
+  return $this->{'time_create'};
+}
 sub isoper {
   my $this = shift;
   return 0;

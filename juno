@@ -189,7 +189,7 @@ for(;;) {
     }
 
     if(length $inbuffer{$client} > $Utils::thisserver->{'mechanics'}->{FLOODOFFBYTES}) {
-      $connections{$client}->quit("Flood");
+      $connections{$client}->quit("Disconnected: flooding is not permitted on this network.");
     }
 }
 
