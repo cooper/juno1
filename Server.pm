@@ -43,9 +43,6 @@ my $commands = {'PING'   => \&handle_ping,
 		# Communication
 		'PRIVMSG'=> \&handle_privmsg,
 		'NOTICE' => \&handle_notice,
-		# Burst commands
-#		'BU'     => \&handle_burstuser, # these both currently are liable to crash juno :P
-#		'BC'     => \&handle_burstchannel
 	       };
 
 ###################
@@ -134,17 +131,20 @@ sub setupaslocal {
 			"0",
 			":".$user->ircname)."\r\n");
 	foreach my $channel (values(%{$user->channels()})) {
+		if ($channel->{name} !~ /^\&/) { 
 		$this->senddata(join(' ',
 			":".$user->nick,
 			"JOIN",
 			$channel->{'name'},
 			$channel->{'jointime'}->{$user->nick})."\r\n");
+		}
 	}
 			
   }
 
   # Burst channel modes and topics
   foreach my $channel (values(%{Utils::channels()})) {
+	if ($channel->{name} !~ /^\&/) { # we don't want to send information about local channels :P
     # :server.name BC #channel creationtime modestr modeargs
     # as of June 27th 2010, we burst multiple prefixes as well as channel modes
     # we now burst ~ & and % as well.
@@ -215,6 +215,7 @@ sub setupaslocal {
 		$channel->{topicsetter},
 		$channel->{topicsettime},
 		":".$channel->{topic})."\r\n");
+	}
 	}
 
   }
