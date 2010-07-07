@@ -126,7 +126,7 @@ sub setupaslocal {
     $this->senddata(join(' ',
 			"NICK",
 			$user->nick,
-			$user->server->hops,
+			$server->hops+1,
 			$user->time_create,
 			$user->username,
 			$user->host,
@@ -482,7 +482,7 @@ sub nick {
 		       $user->username,
 		       $user->host,
 		       $user->server->name,
-		       $user->ircname)."\r\n");
+		       ":".$user->ircname)."\r\n");
 }
 
 # Takes a user and their excuse as the arguments and informs
