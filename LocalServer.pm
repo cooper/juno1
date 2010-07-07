@@ -126,7 +126,7 @@ sub loadconffile {
       next CONFPARSE;
     }
     # Kill Line
-    if($line =~ /^(I?)K:([^:]+):([^:]+):([^.]+)$/) {
+    if($line =~ /^(I?)K:([^:]+):([^:]+):(.+)$/) {
       my($inverse,$usermask,$mask,$reason) = ($1,$2,$3,$4);
       $mask =~ s/\./\\\./g;
       $mask =~ s/\?/\./g;
