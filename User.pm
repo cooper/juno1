@@ -555,8 +555,8 @@ sub handle_kline {
 				my @r = split(" ",$c,3);
 				my $ident = $s[0];
 				my $host = $s[1];
-				my $reason = $r[2];
-				if (!defined($r[2])) { my $reason = "Banned"; }
+				my $reason;
+				if (!defined($r[2])) { $reason = "Banned"; } else { $reason = $r[2]; }
 				my $klined;
 				my $kreason;
 				my($banned,$breason);
