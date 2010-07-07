@@ -178,12 +178,14 @@ sub setupaslocal {
 	}
 # I was so excited when i erased BU and BC! :D
 
+	if ($cmodes ne "") {
 	$this->senddata(join(' ',
 		":".$this->parent->name,
 		"MODE",
 		$channel->{name},
 		"+$cmodes",
 		ltrim($cargs))."\r\n");
+	}
 
 	if (defined($channel->{topic})) {
 	$this->senddata(join(' ',
