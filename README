@@ -10,6 +10,18 @@
 #           |__/            readme                                  #
 #                                                                   #
 #####################################################################
+ 
+ Setting up
+
+     Read the comments in the configuration file.
+     You may need to edit the juno file as well to edit ports and/or enable SSL.
+     I also suggest you change the server.motd, since you're network isn't the juno development network.
+
+ Getting help
+
+     If you want help, find someone who knows perl.
+     irc://cooper.on.fgtb.us:6667/juno
+
 
                            _ __  (_) _ __  ___  __| |
                           | '_ \ | || '__|/ __|/ _` |
