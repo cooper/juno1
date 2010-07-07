@@ -775,7 +775,12 @@ sub handle_time {
 # INFO
 sub handle_info {
   my $this = shift;
-  # TODO
+  $this->sendnumeric($this->server,371,"--------------------\2juno-ircd\2--------------------");
+  $this->sendnumeric($this->server,371,"An Internet Relay Chat daemon written in perl.");
+  $this->sendnumeric($this->server,371,"Based on pIRCd, http://pircd.sourceforge.net");
+  $this->sendnumeric($this->server,371,"     Support: cooper.on.fgtb.us port 6667 #juno");
+  $this->sendnumeric($this->server,371,"     Repository: http://github.com/cooper879/juno-ircd");
+  $this->sendnumeric($this->server,374,"End of INFO list");
 }
 
 # MOTD
@@ -1283,8 +1288,9 @@ sub invite {
     # local user
     $this->senddata(":".$from->nick."!".$from->username."\@",$from->host." INVITE ".$this->nick." :$channel\r\n");
   } else {
-    # dispatch to the relevent server
-
+	if ($channel->{name} !~ /^\&/) { # if the user isn't local, but the channel is, they obviously can't join
+		# otherwise we send the invite to the other server..
+	}
   }
 }
 

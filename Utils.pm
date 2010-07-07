@@ -58,7 +58,7 @@ sub lookup {
       return undef;
     }
   } elsif($users{$name}) {
-    # If its anything else, then it must be a user.
+    # If it's anything else, then it must be a user.
     return $users{$name};
   } else {
     return undef;
