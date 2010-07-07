@@ -161,26 +161,31 @@ sub setlink {
 	my $channel = shift;
 	my $link = Utils::lookup($channel);
 		if (isa($link,"Channel")) {
-			if ($link->isop($user)) {
-				if (lc($this->{name}) eq lc($channel)) {
-					$user->sendreply("609 $$this{name} $channel :You can't link a channel to itself");
-				}
-				else {
-					if (defined($this->{'link'}) && lc($this->{'link'}) eq lc($channel)) {
-						$user->sendreply("609 $$this{name} $channel :Target is already linked");
+			unless ($link->{name} =~ /^\&/ && $this->{name} !~ /^\&/) {
+				if ($link->isop($user)) {
+					if (lc($this->{name}) eq lc($channel)) {
+						$user->sendreply("609 $$this{name} $channel :You can't link a channel to itself");
 					}
 					else {
-						$this->setmode($user,"L");
-						$this->{'link'} = $channel;
-						return $channel;
+						if (defined($this->{'link'}) && lc($this->{'link'}) eq lc($channel)) {
+							$user->sendreply("609 $$this{name} $channel :Target is already linked");
+						}
+						else {
+							$this->setmode($user,"L");
+							$this->{'link'} = $channel;
+							return $channel;
+						}
 					}
 				}
+				else {
+					$user->sendreply("609 $$this{name} $channel :You must be op in a channel to link it");
+					return 0;
+				}
+			} else {
+				$user->sendreply("609 $$this{name} $channel :Cannot link global channel to local channel");
+				return 0;
 			}
-			else {
-				$user->sendreply("609 $$this{name} $channel :You must be op in a channel to link it");
-			}
-		}
-		else {
+		} else {
 			$user->sendreply("403 $$this{name} $channel :No such channel");
 			return 0;
 		}
