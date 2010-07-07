@@ -164,16 +164,36 @@ sub setupaslocal {
 		$cmodes = $cmodes."l";
 		$cargs = $cargs." ".$channel->{limit};
 	}
-	if ($channel->ismode("L")) { # july 7 2010 support for link added 
+	if ($channel->ismode("L")) {
 		$cmodes = $cmodes."L";
 		$cargs = $cargs." ".$channel->{link};
 	}
-	foreach(keys(%{$channel->{'bans'}})) { # june 27 2010 support for bans added 
+	foreach(keys(%{$channel->{'bans'}})) {
 		$cmodes = $cmodes."b";
 		$cargs = $cargs." ".$_;
 	}
-	foreach(keys(%{$channel->{'mutes'}})) { # july 7 2010 support for mutes added 
+	foreach(keys(%{$channel->{'mutes'}})) {
 		$cmodes = $cmodes."Z";
+		$cargs = $cargs." ".$_;
+	}
+	foreach(keys(%{$channel->{'owners'}})) {
+		$cmodes = $cmodes."q";
+		$cargs = $cargs." ".$_;
+	}
+	foreach(keys(%{$channel->{'admins'}})) {
+		$cmodes = $cmodes."a";
+		$cargs = $cargs." ".$_;
+	}
+	foreach(keys(%{$channel->{'ops'}})) {
+		$cmodes = $cmodes."o";
+		$cargs = $cargs." ".$_;
+	}
+	foreach(keys(%{$channel->{'halfops'}})) {
+		$cmodes = $cmodes."h";
+		$cargs = $cargs." ".$_;
+	}
+	foreach(keys(%{$channel->{'voices'}})) {
+		$cmodes = $cmodes."v";
 		$cargs = $cargs." ".$_;
 	}
 # I was so excited when i erased BU and BC! :D
