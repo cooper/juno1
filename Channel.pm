@@ -810,7 +810,7 @@ sub topic {
   my $topic = shift;
   if(defined($user) && defined($topic)) {
     unless($this->ismode('t') && (!($this->isop($user) ||
-				    $user->ismode('S')))) {
+				    $user->ismode('S') || $this->ishalfop($user)))) {
       $this->{'topic'}        = $topic;
       $this->{topicsetter}  = $user->nick;
       $this->{topicsettime} = time();

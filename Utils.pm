@@ -113,7 +113,7 @@ sub syslog {
       Sys::Syslog::openlog('pircd','ndelay,pid','daemon');
     } elsif($params{logfile}) {
       open(STDERR, ">>$params{logfile}") 
-	or die "Unable to open $params{logfile}: $!";
+	or plog("lred","warning","Cannot open ".$params{logfile}.": $!");
     }
     $syslogsetup = 1;
   }
