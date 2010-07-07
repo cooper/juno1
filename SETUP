@@ -1,0 +1,3 @@
+Read the comments in the configuration file.
+You may need to edit the juno file as well to edit ports and/or enable SSL.
+I also suggest you change the server.motd, since you're network isn't the juno development network.

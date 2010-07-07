@@ -26,7 +26,7 @@ Fix a few linking protocol bugs (mainly in TOPIC command)
 Write services to show off my linking protocol
 G-line (a global kline) I plan on sending a KLINE command to all servers and writing a k-line to the config, but we'll see
 and a lot more that I haven't decided (yet).
-
+Check the comments in "setupaslocal" subroutine in in the LocalServer package :P
 
 What I've done
 ---------------------------------------------------------------------
