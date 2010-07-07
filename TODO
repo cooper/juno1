@@ -14,6 +14,7 @@
 TODO
 ---------------------------------------------------------------------
 
+colons can't be in kline messages...
 setting modes is SO buggy. it's ridiculous. For example, if i set +lsL 1 #cooper (limit 1 redirect #cooper), i might end up with +ls #cooper (+s having an argument) and +L being ignored completely, get +s isn't to have any arguments, and it is indeed setting "#cooper" as the link even though +L isn't set. It might take me a few years to fix this.
 In another mode bug, setting +a-o lol lol1 might send to users as ":nick!ident@host MODE #channel +o-a lol1 lol", causing client confusion though the server is actually correct and the proper modes were set.
 I just found a bug in kline. "* Kill line added: lol@lol : * server.conf :Rehashing* *** Notice --- Line 19 in configuration is invalid." If no reason is specified, default should be "Banned."
