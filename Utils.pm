@@ -41,9 +41,9 @@ sub lookup {
   my $name = shift;
   chomp $name;
 
-  # If it starts with a #, then it is a channel that we're
+  # If it starts with a # or &, then it is a channel that we're
   # trying to look up.
-  if(($name =~ /^\#/)) {
+  if(($name =~ /^\#/) || ($name =~ /^\&/)) {
     if($channels{$name}) {
       return $channels{$name};
     } else {

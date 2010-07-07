@@ -122,7 +122,7 @@ sub sendsplash {
   $this->sendnumeric($this->server,3,
    "This server was created ".scalar gmtime($this->server->creation));
   $this->sendnumeric($this->server,4,($this->server->{name},"pircd-juno","dioswkg","bZiklLmnstqaohv"),undef);
-  $this->sendnumeric($this->server,5,($this->server->{name},"PREFIX=(qaohv)~&@%+ STATUSMSG=~&@%+ NETWORK=".$this->server->{network}." CHANTYPES=# CHANMODES=bZiklL,qaohv,mnst"),undef);
+  $this->sendnumeric($this->server,5,($this->server->{name},"PREFIX=(qaohv)~&@%+ STATUSMSG=~&@%+ NETWORK=".$this->server->{network}." CHANTYPES=#& CHANMODES=bZiklL,qaohv,mnst"),undef);
   # Send them LUSERS output
   $this->handle_lusers("LUSERS");
   $this->privmsgnotice("NOTICE",$this->server,"Highest connection count: ".$Utils::stats{highconnections}." (".$Utils::stats{highclients}." clients)");
@@ -260,7 +260,7 @@ sub handle_join {
       $tmp->join($this,@keys) unless $this->onchan($tmp);
     } else {
       # ..create the channel, if it's validly named
-      if(($channel =~ /^\#/)) {
+      if(($channel =~ /^\#/) || ($channel =~ /^\&/)) {
 	my $chanobj = Channel->new($channel);
 	Utils::channels()->{$chanobj->{name}} = $chanobj;
 	$chanobj->join($this);
