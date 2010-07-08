@@ -350,7 +350,7 @@ sub setop {
   my $ret    = Utils::lookupuser($target,1);
 	if ((ref($ret) && isa($ret,"User"))) {
 		if (defined($this->{'users'}->{$ret->nick()})) {
-			if ($this->isop($user) || $user->ismode('o')) {
+			if ($this->isop($user) || $user->ismode('O')) {
 				if (!defined($this->{ops}->{$ret->nick()})) {
 					$this->{ops}->{$ret->nick()} = $user;
 					return $ret->nick;
@@ -391,7 +391,7 @@ sub unsetop {
 		       "They aren't on the channel");
     return 0;
   }
-  if(!$this->isop($user) && !$user->ismode('o')) {
+  if(!$this->isop($user) && !$user->ismode('O')) {
    $user->sendreply("482 $$this{name} :You're not a channel operator.");
     return 0;
   }
@@ -412,7 +412,7 @@ sub sethalfop {
   my $ret    = Utils::lookupuser($target,1);
 	if ((ref($ret) && isa($ret,"User"))) {
 		if (defined($this->{'users'}->{$ret->nick()})) {
-			if ($this->isop($user) || $user->ismode('o')) {
+			if ($this->isop($user) || $user->ismode('O')) {
 				if (!defined($this->{halfops}->{$ret->nick()})) {
 					$this->{halfops}->{$ret->nick()} = $user;
 					return $ret->nick;
@@ -451,7 +451,7 @@ sub unsethalfop {
 		       "They aren't on the channel");
     return 0;
   }
-  if(!$this->isop($user) && !$user->ismode('o')) {
+  if(!$this->isop($user) && !$user->ismode('O')) {
    $user->sendreply("482 $$this{name} :You're not a channel operator.");
     return 0;
   }
@@ -473,7 +473,7 @@ sub setadmin {
   my $ret    = Utils::lookupuser($target,1);
 	if ((ref($ret) && isa($ret,"User"))) {
 		if (defined($this->{'users'}->{$ret->nick()})) {
-			if ($this->isowner($user) || $user->ismode('o')) {
+			if ($this->isowner($user) || $user->ismode('O')) {
 				if (!defined($this->{admins}->{$ret->nick()})) {
 					$this->{admins}->{$ret->nick()} = $user;
 					return $ret->nick;
@@ -512,7 +512,7 @@ sub unsetadmin {
 		       "They aren't on the channel");
     return 0;
   }
-  if(!$this->isowner($user) && !$user->ismode('o') && lc($user->nick) ne lc($target)) {
+  if(!$this->isowner($user) && !$user->ismode('O') && lc($user->nick) ne lc($target)) {
    $user->sendreply("482 $$this{name} :You're not a channel owner.");
     return 0;
   }
@@ -534,7 +534,7 @@ sub setowner {
   my $ret    = Utils::lookupuser($target,1);
 	if ((ref($ret) && isa($ret,"User"))) {
 		if (defined($this->{'users'}->{$ret->nick()})) {
-			if ($this->isowner($user) || $user->ismode('o')) {
+			if ($this->isowner($user) || $user->ismode('O')) {
 				if (!defined($this->{owners}->{$ret->nick()})) {
 					$this->{owners}->{$ret->nick()} = $user;
 					return $ret->nick;
@@ -587,7 +587,7 @@ sub unsetowner {
     return 0;
   }
 
-  if(!$this->isowner($user) && !$user->ismode('o')) {
+  if(!$this->isowner($user) && !$user->ismode('O')) {
    $user->sendreply("482 $$this{name} :You're not a channel owner.");
     return 0;
   }
@@ -618,7 +618,7 @@ sub setvoice {
   my $ret    = Utils::lookupuser($target,1);
 	if ((ref($ret) && isa($ret,"User"))) {
 		if (defined($this->{'users'}->{$ret->nick()})) {
-			if ($this->isop($user) || $this->ishalfop($user) || $user->ismode('o')) {
+			if ($this->isop($user) || $this->ishalfop($user) || $user->ismode('O')) {
 				if (!defined($this->{voice}->{$ret->nick()})) {
 					$this->{voice}->{$ret->nick()} = $user;
 					return $ret->nick;
@@ -713,7 +713,7 @@ sub mode {
     return;
   }
 
-  if(!$this->isop($user) && !$user->ismode('o') && !$this->ishalfop($user)) {
+  if(!$this->isop($user) && !$user->ismode('O') && !$this->ishalfop($user)) {
     $user->sendreply("482 $$this{name} :You're not a channel operator.");
     return;
   }
@@ -870,7 +870,7 @@ sub join {
     }
   
     # Test to see if the channel is over the current population limit.
-  unless($hasinvitation || $user->ismode('o')) {
+  unless($hasinvitation || $user->ismode('O')) {
     if(($this->ismode('l')) &&
        ((1+scalar keys(%{$this->{'users'}}))>$this->{limit})) {
       Connection::sendreply($user, "471 $this->{name} :Cannot join channel. Population limit reached. (+l)");
@@ -971,27 +971,27 @@ sub kick {
   my @foo;
   my $sap = Utils::lookupuser($target,1);
 
-  if(!$this->isop($user) && !$this->ishalfop($user) && !$user->ismode('o')) {
+  if(!$this->isop($user) && !$this->ishalfop($user) && !$user->ismode('O')) {
     $user->sendnumeric($user->server,482,$this->{name},"You are not a channel operator");
     return;
   }
-  if(!$this->isowner($user) && $this->isowner($sap) && !$this->ismode('o')) {
+  if(!$this->isowner($user) && $this->isowner($sap) && !$this->ismode('O')) {
     $user->sendnumeric($user->server,482,$this->{name},"You are not a channel owner");
     return;
   }
-  if(!$this->isowner($user) && $this->isadmin($sap) && !$this->ismode('o')) {
+  if(!$this->isowner($user) && $this->isadmin($sap) && !$this->ismode('O')) {
     $user->sendnumeric($user->server,482,$this->{name},"You are not a channel owner");
     return;
   }
-  if($this->ishalfop($user) && !$this->isop($user) && $this->isowner($sap) && !$this->ismode('o')) {
+  if($this->ishalfop($user) && !$this->isop($user) && $this->isowner($sap) && !$this->ismode('O')) {
     $user->sendnumeric($user->server,482,$this->{name},"You are not a channel owner");
     return;
   }
-  if($this->ishalfop($user) && !$this->isop($user) && $this->isadmin($sap) && !$this->ismode('o')) {
+  if($this->ishalfop($user) && !$this->isop($user) && $this->isadmin($sap) && !$this->ismode('O')) {
     $user->sendnumeric($user->server,482,$this->{name},"You are not a channel owner");
     return;
   }
-  if($this->ishalfop($user) && !$this->isop($user) && $this->isop($sap) && !$this->ismode('o')) {
+  if($this->ishalfop($user) && !$this->isop($user) && $this->isop($sap) && !$this->ismode('O')) {
     $user->sendnumeric($user->server,482,$this->{name},"You are not a channel operator");
     return;
   }
