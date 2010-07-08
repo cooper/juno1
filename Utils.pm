@@ -191,7 +191,8 @@ sub validnick {
     return undef if(length($str)<1 || length($str)>32);
 
     # valid characters given in rfc1459 2.3.1
-    return undef if($str=~/[^A-Za-z0-9-\[\]\\\`\^\/\|\{\}\_]/);
+    return undef if($str=~/^\d/);
+    return undef if($str=~/[^A-Za-z0-9-\[\]\\\`\^\|\{\}\_]/);
 
     return 1;
 }
