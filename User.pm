@@ -252,6 +252,7 @@ sub handle_join {
 
   # For each channel they want to join..
   foreach my $channel (@channels) {
+    if (length($channel) > 30) { $channel = substr($channel,0,-(length($channel)-30)); }
     # ..look it up..
     my $tmp = Utils::lookup($channel);
     # ..if it is a channel..
