@@ -75,7 +75,10 @@ my $commands={
     },
     USER=>sub {
 	my($this,$dummy,$username,$host,$server,$ircname)=@_;
-
+		my $length = length($username);
+		if (length($username) > 10) {
+			$username = substr($username, 0, -($length-10));
+		}
 	$this->{user} = $username;
 	$this->{ircname}  = $ircname;
 	if($this->{doing_nospoof}<0) {
