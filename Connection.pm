@@ -267,7 +267,6 @@ sub senddata {
   $this->{'outbuffer'}->{$this->{'socket'}} .= join('',@_);
 }
 
-# handle a NICK request
 sub docap {
   my($this,$string,$arg)=@_;
   my $channel;

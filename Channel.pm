@@ -512,7 +512,7 @@ sub unsetadmin {
 		       "They aren't on the channel");
     return 0;
   }
-  if(!$this->isowner($user) && !$user->ismode('o')) {
+  if(!$this->isowner($user) && !$user->ismode('o') && lc($user->nick) ne lc($target)) {
    $user->sendreply("482 $$this{name} :You're not a channel owner.");
     return 0;
   }

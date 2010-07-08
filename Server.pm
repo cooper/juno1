@@ -121,6 +121,7 @@ sub setupaslocal {
 
 # I was so excited when i erased BU and BC! :D
     $this->senddata(join(' ',
+			":".$user->server->name,
 			"NICK",
 			$user->nick,
 			$server->hops+1,
