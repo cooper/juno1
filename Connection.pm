@@ -288,6 +288,7 @@ sub donick {
   } elsif (!defined($this->{'nick'})) {
     if (defined(Utils::lookup($newnick))) { $this->{'nick'}=$newnick."_"; }
     else { $this->{'nick'}=$newnick; }
+    if (!defined($this->{'user'})) { $this->{'user'} = "user"; }
     $this->{doing_nospoof} = int(rand()*4294967296);
     $this->senddata("PING :$this->{doing_nospoof}\r\n");
   } elsif (defined(Utils::lookup($newnick)) && (Utils::irclc($newnick) ne Utils::irclc($this->{'nick'}))) {
@@ -298,7 +299,7 @@ sub donick {
     $this->{'nick'}    = $newnick;
     $this->senddata(":$$this{oldnick}!$$this{user}\@$$this{host} NICK :".$this->{'nick'}."\r\n");
     if ($this->isa('User')) {	# not just an unpromoted connection
-	unless (defined($this->{username})) { $this->{username} = "user"; }
+	if (!defined($this->{'user'})) { $this->{'user'} = "user"; }
       unshift @Utils::nickhistory, { 'nick' => $this->{'oldnick'},
 				     'newnick' => $this->{'nick'},
 				     'username' => $this->username,
