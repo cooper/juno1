@@ -433,11 +433,13 @@ sub handle_whois {
 	}
 	# *** on IRC via server foo.bar.org ([1.2.3.4] Server Name)
 	$this->sendnumeric($this->server,312,($user->nick,$user->server->{name}),$user->server->description);
-	# *** Nick is an IRC Operator
-	#  ... or ...
-	# *** Nick is a god-like IRC Operator
+
 	if($user->ismode('o')) {
-	  $this->sendnumeric($this->server,313,$user->nick,"is ".(($user->ismode('S'))?"a network service":"an IRC operator"));
+		my $status;
+		if($user->ismode('o')) { $status = "an IRC operator"; }
+		if($user->ismode('N')) { $status = "a network administrator"; }
+		if($user->ismode('S')) { $status = "a network service"; }
+	  $this->sendnumeric($this->server,313,$user->nick,"is $status");
 	}
 	# *** Nick is away: excuse
 	if($user->away()) {
@@ -886,11 +888,14 @@ sub handle_mode {
 	} elsif($byte eq "-") {
 	  $state = 0;
 	} else {
+	  if(!$this->ismode('N') && $byte =~ /\w/) {
+	    next MODEBYTE if grep {/$byte/} ("o","S","O","N");
+	  }
 	  if(!$this->ismode('o') && $byte =~ /\w/) {
-	    next MODEBYTE if grep {/$byte/} ("o","S");
+	    next MODEBYTE if grep {/$byte/} ("o","S","O","N");
 	  }
 	  if(!$this->ismode('S')) {
-	    next MODEBYTE if $byte eq "k";
+	    next MODEBYTE if $byte eq "S";
 	  }
 	  if($state) {
 	    push(@accomplishedset,$byte) if $this->setmode($byte);
@@ -935,24 +940,20 @@ sub handle_mode {
 # OPER nick :password
 sub handle_oper {
   my($this,$dummy,$nick,$password)=(shift,shift,shift,shift);
-
-  if($this->ismode('o')) {
-    return;
-  }
-
   my $opers = $this->server->{'opers'};
-
+  my $admins = $this->server->{'netadmins'};
+  my $modestr;
   my $mymask = $this->nick."!".$this->username."\@".$this->host;
   if(defined($opers->{$nick})) {
     my %info  = %{ $opers->{$nick} };
     if($mymask =~ /$info{mask}$/i) {
       if(crypt($password,"pb") eq $info{password}) {
-	my $modestr = "o";
-	$this->setmode('o');
+	$modestr .= "N" if $admins->{$nick} and $this->setmode('N');
+	$modestr .= "o" if $this->setmode('o');
 	$modestr .= "w" if $this->setmode('w');
 	$modestr .= "s" if $this->setmode('s');
 	$this->senddata(":".$this->nick." MODE ".$this->nick." :+$modestr\r\n");
-	$this->sendnumeric($this->server,381,"You are now an IRC Operator");
+	$this->sendnumeric($this->server,381,"You are now ".($admins->{$nick}?"a network administrator":"an IRC operator"));
       } else {
 	$this->sendnumeric($this->server,464,"Password Incorrect.");
       }
@@ -1156,7 +1157,7 @@ sub isoper {
 sub isvalidusermode {
   my $mode = shift;
   if($mode =~ /\W/) { return 0; }
-  if(grep {/$mode/} ("d","i","o","s","w","k","S")) {
+  if(grep {/$mode/} ("d","i","o","s","w","k","S","O","N")) {
     return 1;
   } else {
     return 0;

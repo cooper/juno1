@@ -23,7 +23,6 @@ In another mode bug, setting +a-o lol lol1 might send to users as ":nick!ident@h
 Matthew wants me to change the linking protocol burst from BU and BC to NICK and JOIN (which makes more sense for making atheme compatable, I suppose)
 I also need to make linking two IRCds capable, without crashing on BU and BC (of course).
 Modes e and I (ban exception and invite exception)
-I'm going to add a mode for oper override to prevent accidental abuse. Whether or not you can use it should be up to your o-line in the config.
 The linking protocol doesn't send privmsgs... we need to send to servers with a client involved only for ethical reasons.
 Although we send data, we ignore most received. :P
 Write services to show off my linking protocol

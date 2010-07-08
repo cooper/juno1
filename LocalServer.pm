@@ -114,6 +114,18 @@ sub loadconffile {
       $this->{'opers'}->{ $nick }->{'password'} = $password;
       next CONFPARSE;
     }
+    # network administrator line
+    if($line =~ /^NA:([^:]+):([^:]+):([^:]+)$/) {
+      my($nick,$mask,$password) = ($1,$2,$3);
+      $mask =~ s/\./\\\./g;
+      $mask =~ s/\?/\./g;
+      $mask =~ s/\*/\.\*/g;
+      $this->{'opers'}->{ $nick }->{'mask'} = $mask;
+      $this->{'opers'}->{ $nick }->{'password'} = $password;
+      $this->{'netadmins'}->{ $nick }->{'mask'} = $mask;
+      $this->{'netadmins'}->{ $nick }->{'password'} = $password;
+      next CONFPARSE;
+    }
     # Port line
     if($line =~ /^P:([^:]+):([^:]+)$/) {
       if($2) {
