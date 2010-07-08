@@ -80,16 +80,16 @@ sub names {
 	  keys %{$this->{'users'}}) {
     if($count>60) { $index++; $count = 0; }
     my $nick = $this->{'users'}->{$_}->nick;
-    if($this->hasvoice($this->{'users'}->{$_})) {
-      $nick = "+".$nick;
-    } if($this->ishalfop($this->{'users'}->{$_})) {
-      $nick = "%".$nick;
-    } if($this->isop($this->{'users'}->{$_})) {
-      $nick = "@".$nick;
-    } if($this->isadmin($this->{'users'}->{$_})) {
-      $nick = "&".$nick;
-    } if($this->isowner($this->{'users'}->{$_})) {
+    if($this->isowner($this->{'users'}->{$_})) {
       $nick = "~".$nick;
+    } elsif($this->isadmin($this->{'users'}->{$_})) {
+      $nick = "&".$nick;
+    } elsif($this->isop($this->{'users'}->{$_})) {
+      $nick = "@".$nick;
+    } elsif($this->ishalfop($this->{'users'}->{$_})) {
+      $nick = "%".$nick;
+    } elsif($this->hasvoice($this->{'users'}->{$_})) {
+      $nick = "+".$nick;
     }
 
 

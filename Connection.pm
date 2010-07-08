@@ -268,10 +268,10 @@ sub senddata {
 sub docap {
   my($this,$string,$arg)=@_;
   my $channel;
-	if (uc($arg) == "LS") {
+	if (uc($arg) eq "LS") {
 		$this->senddata(":".$this->server->{name}." CAP * LS :multi-prefix\n");
 	}
-	if (uc($arg) == "END") {
+	if (uc($arg) eq "END") {
 		# end of cap request
 	}
 }
@@ -285,18 +285,20 @@ sub donick {
   }
     if (!Utils::validnick($newnick)) {
     $this->sendnumeric($this->server,432,$newnick,"Erroneous nickname.");
+  } elsif (!defined($this->{'nick'})) {
+    if (defined(Utils::lookup($newnick))) { $this->{'nick'}=$newnick."_"; }
+    else { $this->{'nick'}=$newnick; }
+    $this->{doing_nospoof} = int(rand()*4294967296);
+    $this->senddata("PING :$this->{doing_nospoof}\r\n");
   } elsif (defined(Utils::lookup($newnick)) && (Utils::irclc($newnick) ne Utils::irclc($this->{'nick'}))) {
     $this->sendnumeric($this->server,433,$newnick,
 		       "Nickname already in use");
-  } elsif (!defined($this->{'nick'})) {
-    $this->{'nick'}=$newnick;
-    $this->{doing_nospoof} = int(rand()*4294967296);
-    $this->senddata("PING :$this->{doing_nospoof}\r\n");
   } else {
     $this->{'oldnick'} = $this->{'nick'};
     $this->{'nick'}    = $newnick;
     $this->senddata(":$$this{oldnick}!$$this{user}\@$$this{host} NICK :".$this->{'nick'}."\r\n");
     if ($this->isa('User')) {	# not just an unpromoted connection
+	unless (defined($this->{username})) { $this->{username} = "user"; }
       unshift @Utils::nickhistory, { 'nick' => $this->{'oldnick'},
 				     'newnick' => $this->{'nick'},
 				     'username' => $this->username,

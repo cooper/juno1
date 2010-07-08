@@ -122,7 +122,7 @@ sub sendsplash {
   $this->sendnumeric($this->server,3,
    "This server was created ".scalar gmtime($this->server->creation));
   $this->sendnumeric($this->server,4,($this->server->{name},"pircd-juno","dioswkg","bZiklLmnstqaohv"),undef);
-  $this->sendnumeric($this->server,5,($this->server->{name},"PREFIX=(qaohv)~&@%+ STATUSMSG=~&@%+ NETWORK=".$this->server->{network}." CHANTYPES=#& CHANMODES=bZiklL,qaohv,mnst"),undef);
+  $this->sendnumeric($this->server,5,($this->server->{name},"PREFIX=(qaohv)~&\@%+ STATUSMSG=\@+ NETWORK=".$this->server->{network}." CHANTYPES=#& CHANMODES=bZ,klL,imnst"),undef);
   # Send them LUSERS output
   $this->handle_lusers("LUSERS");
   $this->privmsgnotice("NOTICE",$this->server,"Highest connection count: ".$Utils::stats{highconnections}." (".$Utils::stats{highclients}." clients)");
@@ -485,10 +485,10 @@ sub handle_who {
 				$user->server->{name},$user->nick,
 				(defined($user->away())?'S':'H').
 				($user->ismode('o')?'*':'').
-				($ret->isowner($user)?'~':
-				($ret->isadmin($user)?'&':
-				($ret->isop($user)?'@':
-				 ($ret->hasvoice($user)?'+':''))))),
+				($ret->isowner($user)?'~':"").
+				($ret->isadmin($user)?'&':"").
+				($ret->isop($user)?'@':"").
+				 ($ret->hasvoice($user)?'+':'')),
 			       $user->server->hops." ".$user->ircname);
 	  }
 	}
@@ -1321,7 +1321,7 @@ sub kill {
   $outbuffer   .= sprintf("ERROR :Closing Link: %s[%s] by %s (Local kill by %s (%s))\r\n",
 			  $this->nick,$this->host,
 			  $from->nick,$from->nick,$excuse);
-  $this->{'socket'}->send($outbuffer, 0);
+  $this->{'socket'}->send($outbuffer, 0) or undef($this->{'socket'});
 
   # Remove them from all appropriate structures, etc
   # and announce it to local channels
