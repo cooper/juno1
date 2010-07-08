@@ -30,6 +30,7 @@ my $commands = {'PONG'    => sub { },
 		'PRIVMSG' => \&handle_privmsg,
 		'NOTICE'  => \&handle_notice,
 		'JOIN'    => \&handle_join,
+		'J'       => \&handle_join,
 		'CHANNEL' => \&handle_join,
 		'PART'    => \&handle_part,
 		'TOPIC'   => \&handle_topic,
@@ -1088,6 +1089,7 @@ sub handle_quit {
   # quits from users are prefixed with ~ as of june 27, 2010 to prevent false quit messages
   my $this = shift;
   my($command,$msg) = split(/\s+/,shift,2);
+  if (length($msg) > 200) { $msg = substr $msg, 0, -(length($msg)-200); }
   $msg =~ s/^://;
   foreach my $server ($this->server->children) {
     $server->uquit($this,"~$msg");
