@@ -749,6 +749,21 @@ sub handle_stats {
 	      $this->sendnumeric($this->server,243,"O",$opers{$nick}->{mask},"*",$nick,0,10,undef);
 	  }
       };
+      /^K/ && do {
+	  my @klines = @{$this->server->getklines()};
+		foreach my $ref (@klines) {
+			my $host = $ref->[2];
+			my $ident = $ref->[1];
+			my $reason = $ref->[3];
+				$host =~ s/\\\./\./g;
+				$host =~ s/\./\./g;
+				$host =~ s/\.\*/\*/g;
+				$ident =~ s/\\\./\./g;
+				$ident =~ s/\./\./g;
+				$ident =~ s/\.\*/\*/g;
+			$this->sendnumeric($this->server,243,"$ident\@$host :$reason",undef);
+		}
+      };
       /^[CN]/ && do {
 	  # no network-fu!
       };
@@ -953,6 +968,7 @@ sub handle_oper {
 	$modestr .= "w" if $this->setmode('w');
 	$modestr .= "s" if $this->setmode('s');
 	$this->senddata(":".$this->nick." MODE ".$this->nick." :+$modestr\r\n");
+	$this->server->opernotify($this->{nick}." is now ".($admins->{$nick}?"a network administrator":"an IRC operator")." using account \2$nick\2");
 	$this->sendnumeric($this->server,381,"You are now ".($admins->{$nick}?"a network administrator":"an IRC operator"));
       } else {
 	$this->sendnumeric($this->server,464,"Password Incorrect.");

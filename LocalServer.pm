@@ -88,6 +88,11 @@ sub loadconffile {
       $this->{'port'}        = $4;
       next CONFPARSE;
     }
+    # Server ID line
+    if($line =~ /^SID:(\d+)([\w\d]+)([\w\d]+)/) {
+	$this->{'sid'} = $1;
+	next CONFPARSE;
+    }
     # Admin line
     if($line =~ /^A:([^:]+):([^:]+):([^:]+)/) {
       @{$this->{'admin'}} = ($1,$2,$3);
@@ -183,13 +188,6 @@ sub loadconffile {
 	# comment line; ignoring it.
 	next CONFPARSE;
     }
-    if($line =~ //) {
-	my $o = "\033[0m";
-	my $lr = "\033[1;31m";
-	my $lb = "\033[1;36m";
-	Utils::plog("lred","warning","Line ".$i.' in '.$this->{'conffile'}." blank.");
-	next CONFPARSE;
-    }
     my $o = "\033[0m";
     my $lr = "\033[1;31m";
     my $lb = "\033[1;36m";
@@ -277,6 +275,10 @@ sub getopers {
   my $this = shift;
   my @foo = keys %{$this->{'opers'}};
   return $this->{'opers'};
+}
+sub getklines {
+  my $this = shift;
+  return $this->{'klines'};
 }
 
 sub lookupconnection {

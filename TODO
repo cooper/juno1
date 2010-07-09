@@ -39,6 +39,7 @@ Prefixes ~ & and % (owner, admin, and halfop +q +a and +h)
 Multi-prefix names output
 CAP reply
 Channel link (+L). if the population limit (+l) is reached, forward you to the linked channel (if there aren't double links)
+added network administrator lines (NA) and mode O (oper override) to prevent accidental abuse
 in viewing of ban and mute list (/mode b|Z), we show full hosts instead of the server name (... @ that)
 We now check if a ban/mute mask is valid (fail for not checking before) +b fgt = fgt!*@* +b fgt@* = *!fgt@* +Z *@* = *!*@*
 Channel mode +Z, mutes. (Similar to charybdis's quiet, +q)
