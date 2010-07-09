@@ -30,8 +30,6 @@ my $commands = {'PONG'    => sub { },
 		'PRIVMSG' => \&handle_privmsg,
 		'NOTICE'  => \&handle_notice,
 		'JOIN'    => \&handle_join,
-		'J'       => \&handle_join,
-		'CHANNEL' => \&handle_join,
 		'PART'    => \&handle_part,
 		'TOPIC'   => \&handle_topic,
 		'KICK'    => \&handle_kick,
@@ -750,6 +748,7 @@ sub handle_stats {
 	  }
       };
       /^K/ && do {
+	if ($this->ismode('o')) {
 	  my @klines = @{$this->server->getklines()};
 		foreach my $ref (@klines) {
 			my $host = $ref->[2];
@@ -761,8 +760,9 @@ sub handle_stats {
 				$ident =~ s/\\\./\./g;
 				$ident =~ s/\./\./g;
 				$ident =~ s/\.\*/\*/g;
-			$this->sendnumeric($this->server,243,"$ident\@$host :$reason",undef);
+			$this->sendnumeric($this->server,219,"K","$ident\@$host * * :$reason",undef);
 		}
+	} else { $this->sendnumeric($this->server,481,"Permission Denied- You're not an IRC operator"); }
       };
       /^[CN]/ && do {
 	  # no network-fu!
