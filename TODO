@@ -15,7 +15,8 @@ TODO
 ---------------------------------------------------------------------
 
 Fix multiple connections from the same nick (FAIL)
-TS6 linking protocol
+part messages (be sure to limit them as well)
+finish linking protocol and make services compatible
 Relay invites to all servers (except when channels are local, of course)
 setting modes is SO buggy. it's ridiculous. For example, if i set +lsL 1 #cooper (limit 1 redirect #cooper), i might end up with +ls #cooper (+s having an argument) and +L being ignored completely, get +s isn't to have any arguments, and it is indeed setting "#cooper" as the link even though +L isn't set. It might take me a few years to fix this.
 I found yet another bug in mode setting. For whatever reason, if +s is set the ircd completely ignores the fact that +L or +l is set.. I didn't test with other modes but i'm sure it does it with each of them. :(
@@ -26,8 +27,7 @@ Modes e and I (ban exception and invite exception)
 The linking protocol doesn't send privmsgs... we need to send to servers with a client involved only for ethical reasons.
 Although we send data, we ignore most received. :P
 Write services to show off my linking protocol
-G-line (a global kline) I plan on sending a KLINE command to all servers and writing a k-line to the config, but we'll see
-and a lot more that I haven't decided (yet).
+G-line (a global kline)
 Check the comments in "setupaslocal" subroutine in in the LocalServer package :P
 Note to self: when creating a new channel mode, don't forget to add it to the server burst
 
@@ -39,6 +39,8 @@ Prefixes ~ & and % (owner, admin, and halfop +q +a and +h)
 Multi-prefix names output
 CAP reply
 Channel link (+L). if the population limit (+l) is reached, forward you to the linked channel (if there aren't double links)
+auto +nt on channel create
+internal logging channel - server privmsgs channel on client connect, oper, etc
 added network administrator lines (NA) and mode O (oper override) to prevent accidental abuse
 in viewing of ban and mute list (/mode b|Z), we show full hosts instead of the server name (... @ that)
 We now check if a ban/mute mask is valid (fail for not checking before) +b fgt = fgt!*@* +b fgt@* = *!fgt@* +Z *@* = *!*@*

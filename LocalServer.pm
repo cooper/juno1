@@ -88,15 +88,14 @@ sub loadconffile {
       $this->{'port'}        = $4;
       next CONFPARSE;
     }
-    # Server ID line
-    if($line =~ /^SID:(\d+)([\w\d]+)([\w\d]+)/) {
-	$this->{'sid'} = $1;
-	next CONFPARSE;
-    }
     # Admin line
     if($line =~ /^A:([^:]+):([^:]+):([^:]+)/) {
       @{$this->{'admin'}} = ($1,$2,$3);
       next CONFPARSE;
+    }
+    if($line =~ /^LOG:([\#\&].+)$/) {
+	$this->{'log'} = $1;
+	next CONFPARSE;
     }
     # MOTD line
     if($line =~ /^MOTD:(.+)$/) {
@@ -210,6 +209,11 @@ sub opernotify {
   my $msg  = shift;
 
   my $user;
+if (defined($this->{'log'})) {
+  my $log = Utils::lookup($this->{'log'});
+  User::multisend(":".$this->{'name'}." PRIVMSG>$$log{name} :$msg",
+		  values(%{$log->{'users'}}));
+}
   foreach $user (values(%{$this->{'users'}})) {
     if($user->ismode('o') && $user->ismode('s')) {
       $user->privmsgnotice("NOTICE",$this,"*** Notice --- $msg");

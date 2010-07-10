@@ -27,6 +27,7 @@ sub new {
   $this->{'socket'}    = shift;
   $this->{'outbuffer'} = shift;
   $this->{'server'}    = shift;
+  my $server	       = Utils::lookupserver($this->{'server'}->{'name'});
   $this->{'connected'} = $this->{last_active} = time();
 #  $this->{'ssl'} = $this->{'socket'}->isa("IO::Socket::SSL");
 
@@ -93,7 +94,8 @@ my $commands={
 	$this->{proto}       = $proto;
 	$this->{distance}    = $distance;
 	$this->{description} = $description;
-	if($this->{password}) {
+	my $server           = Utils::lookupserver($this->{'server'}->{'name'});
+	if(crypt($this->{password},"pb") eq $server->{'connections'}{$servername}->[2]) {
 	    $this->{ready} = 1;
 	}
     },
@@ -102,8 +104,8 @@ my $commands={
 	
 	# We don't actually do anything with the password yet
 	$this->{password} = $password;
-
-	if($this->{servername}) {
+	my $server           = Utils::lookupserver($this->{'server'}->{'name'});
+	if(crypt($this->{password},"pb") eq $server->{'connections'}{$this->{servername}}->[2] && $this->{servername}) {
 	    $this->{ready} = 1;
 	}
     },

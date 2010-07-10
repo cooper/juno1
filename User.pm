@@ -81,6 +81,7 @@ sub new {
   $this->{'nick'}        = $connection->{'nick'};
   $this->{'user'}        = $connection->{'user'};
   $this->{'host'}        = $connection->{'host'};
+  $this->{'realhost'}    = $connection->{'host'};
   $this->{'ip'} 	 = $connection->{'host_ip'};
   $this->{'time_create'} = $connection->{'time_create'};
   $this->{'ircname'}     = $connection->{'ircname'};
@@ -100,6 +101,7 @@ sub new {
   $this->server->adduser($this);
   if(defined($connection->{'socket'})) {
     Utils::plog("lcyan","register",Utils::r("mask").$this->{'nick'}."!".$this->{'user'}."\@".$this->{'host'}.Utils::r("ip").$this->{'ip'}.Utils::r("realname").$this->{'ircname'});
+    $this->server->opernotify("Client connecting on ".$this->server->name.": ".$this->{'nick'}."!".$this->{'user'}."\@".$this->{'host'}." [".$this->{'ircname'}."]");
     $this->{'socket'}    = $connection->{'socket'};
     $this->{'outbuffer'} = $connection->{'outbuffer'};
     foreach my $server ($this->server->children) {
@@ -216,7 +218,15 @@ sub msg_or_notice {
     }
   }
 }
-
+sub generate_id {
+#	# TODO
+#	my $this = shift;
+#	my $server = $this->server;
+#	# For now since i'm stumped, we'll use random numbers
+#	my $id = "A".rand(9).rand(9).rand(9).rand(9).rand(9);
+#	foreach ($server->users()) {
+#	}
+}
 # PRIVMSG
 sub handle_privmsg {
     my($this,$dummy,$targetstr,$msg)=(shift,shift,shift,shift);
@@ -260,7 +270,7 @@ sub handle_join {
       $tmp->join($this,@keys) unless $this->onchan($tmp);
     } else {
       # ..create the channel, if it's validly named
-      if(($channel =~ /^\#/) || ($channel =~ /^\&/)) {
+      if($channel =~ /^[\#\&]/){
 	my $chanobj = Channel->new($channel);
 	Utils::channels()->{$chanobj->{name}} = $chanobj;
 	$chanobj->join($this);
@@ -1120,12 +1130,10 @@ sub handle_cap {
 # DATA ACCESSING SUBROUTINES
 ############################
 
-# Get the nick of this user
 sub nick {
   my $this = shift;
   return $this->{'nick'};
 }
-
 sub username {
   my $this = shift;
   return $this->{'user'};

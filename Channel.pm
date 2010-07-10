@@ -67,7 +67,14 @@ sub users {
 
   return values(%{$this->{'users'}});
 }
-
+sub bans {
+  my $this = shift;
+  return keys(%{$this->{'bans'}});
+}
+sub mutes {
+  my $this = shift;
+  return keys(%{$this->{'mutes'}});
+}
 # Sends the user /names output
 sub names {
   my $this = shift;
@@ -107,7 +114,8 @@ sub isvalidchannelmode {
 		     "l","m","n",
 		     "o","s","t",
 		     "v","a","q",
-		     "h","Z","L"   )) {
+		     "h","Z","L",
+		     "A","O"  )) {
     return 1;
   } else {
     return 0;
@@ -239,6 +247,7 @@ sub setban {
     return 0; # already set
   }
 }
+
 sub setmute {
 # we have mute! Added on july 1st, 2010
 # we actually *check* if a mask is somewhat valid, unlike before.
@@ -271,6 +280,7 @@ sub setmute {
     return 0; # already set
   }
 }
+
 # Removes a ban mask from the current 
 sub unsetban {
   my $this = shift;
@@ -298,7 +308,6 @@ sub unsetmute {
     return 0;
   }
 }
-
 # Takes a User object and returns true if that user
 # is an op on this channel.
 sub isop {
@@ -564,11 +573,24 @@ sub firstjoin {
 # and this subroutine is the exact same without the op check
   my $this   = shift;
   my $user   = shift;
-  my $target = shift;
-  my $ret    = Utils::lookupuser($target,1);
-#   $this->{owners}->{$ret->nick()} = $user; # if you want owner on channel create, uncomment this :p
-    $this->{ops}->{$ret->nick()} = $user;
-    return $ret->nick;
+  my $server = shift;
+
+  $this->{'ops'}->{$user->nick()} = $user;
+  $this->{'users'}->{$user->nick()} = $user;
+  $this->{'jointime'}->{$user->nick()} = time;
+  $user->{'channels'}->{$this->{name}} = $this;
+  $this->setmode($user,"n");
+  $this->setmode($user,"t");
+  User::multisend(":$$user{nick}!$$user{user}\@$$user{host} JOIN>:$$this{name}",
+		  values(%{$this->{'users'}}));
+  User::multisend(":".$user->server->name." MODE>$$this{name} +nt $$user{nick}",
+		  values(%{$this->{'users'}}));
+  foreach my $iserver ($Utils::thisserver->children) {
+    if($iserver ne $server) {
+      $iserver->join($user,$this);
+    }
+  }
+    return $user->nick;
 }
 
 
@@ -724,7 +746,7 @@ sub mode {
     } elsif($_ eq "-") {
       $state = 0;
     } else {
-      if($_=~/[bZoahqvlkL]/ &&!($_ eq 'l' && !$state)) {
+      if($_=~/[bZoahqvlkLA]/ &&!($_ eq 'l' && !$state)) {
 	if ($_ eq "L" && !$state && $this->ismode("L")) { $this->unsetlink($user); push(@accomplishedunset, $_); }
 	$arg=shift(@arguments);
 	next if(!defined($arg));
@@ -913,13 +935,15 @@ sub join {
   }
 
   #do the actual join
-  $this->force_join($user,$user->server);
+  if(0==scalar keys(%{$this->{'users'}})) {
+	$this->firstjoin($user,$user->server);
+  }
+  else {
+	$this->force_join($user,$user->server);
+  }
 
   $user->sendnumeric($user->server,332,$this->{'name'},$this->{'topic'}) if defined $this->{'topic'};
   $user->sendnumeric($user->server,333,$this->{'name'},$this->{'topicsetter'},$this->{'topicsettime'},undef) if defined $this->{'topicsetter'};
-  if(1==scalar keys(%{$this->{'users'}})) {
-    $this->firstjoin($user,$user->nick());
-  }
   if(defined($this->{'topic'})) {
     $this->topic($user);
   }
@@ -942,6 +966,8 @@ sub force_join {
   $user->{'channels'}->{$this->{name}} = $this;
   User::multisend(":$$user{nick}!$$user{user}\@$$user{host} JOIN>:$$this{name}",
 		  values(%{$this->{'users'}}));
+
+  
   foreach my $iserver ($Utils::thisserver->children) {
     if($iserver ne $server) {
       $iserver->join($user,$this);

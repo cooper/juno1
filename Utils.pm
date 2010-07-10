@@ -26,6 +26,7 @@ use Tie::IRCUniqueHash;
 # to let everything get at the same data.
 tie my %users,    'Tie::IRCUniqueHash';
 tie my %servers,  'Tie::IRCUniqueHash';
+tie my %serveris,  'Tie::IRCUniqueHash';
 tie my %channels, 'Tie::IRCUniqueHash';
     my @nickhistory;
 
@@ -57,11 +58,10 @@ sub lookup {
     } else {
       return undef;
     }
-  } elsif($users{$name}) {
-    # If it's anything else, then it must be a user.
+  } elsif(validnick($name)) {
     return $users{$name};
   } else {
-    return undef;
+    return $serveris{$name};
   }
 }
 
@@ -102,7 +102,7 @@ sub lookupserver {
 sub users    { return \%users;    }
 sub channels { return \%channels; }
 sub servers  { return \%servers;  }
-
+sub serveris  { return \%serveris;  }
 # Log something
 sub syslog {
   my $data = shift;

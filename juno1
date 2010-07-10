@@ -53,7 +53,7 @@ tie %serversocks, 'Tie::RefHash';
 # Jay F. Kominek didn't want it to be that simple. I'll fix that later
 # when I'm an a less-lazy mood :P
 
-my $addr	= "0.0.0.0";
+my $addr	= "69.164.222.214";
 my $port        = 6667;
 my $sslport     = 6697;
 my $ssl         = 0;
@@ -83,7 +83,6 @@ if($daemon) {
 
 my $tmp = LocalServer->new($conf);
 Utils::servers()->{$tmp->name()} = $Utils::thisserver = $tmp;
-Utils::serveris()->{$tmp->sid()} = $Utils::thisserver = $tmp;
 $Utils::stats{highclients} = 0;
 $Utils::stats{highconnections} = 0;
 
@@ -240,9 +239,7 @@ for(;;) {
       } elsif($thing->isa("Server")) {
 	# They've handed us a Server object.
 	my $name = $thing->name();
-	my $sid = $thing->sid();
 	Utils::servers()->{$name} = $thing;
-	Utils::serveris()->{$sid} = $thing;
 	$connections{$client}     = $thing;
       } else {
 	# Wow. Martian finalization. Crazy Stuff.

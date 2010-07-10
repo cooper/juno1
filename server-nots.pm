@@ -33,7 +33,6 @@ my $commands = {'PING'   => \&handle_ping,
 		'MODE'   => \&handle_mode,
 		# User presence
 		'NICK'   => \&handle_nick,
-		'CLIENT' => \&handle_client,
 		'KILL'   => \&handle_kill,
 		'QUIT'   => \&handle_quit,
 		# User status
@@ -57,6 +56,7 @@ sub new {
   my $this  = { };
   my $connection = shift;
 
+  $this->{'sid'}         = $connection->{'sid'};
   $this->{'name'}        = $connection->{'servername'};
   $this->{'description'} = $connection->{'description'};
   $this->{'distance'}    = $connection->{'distance'};
@@ -121,9 +121,11 @@ sub setupaslocal {
   foreach my $user (values(%{Utils::users()})) {
 
 # I was so excited when i erased BU and BC! :D
+    if (defined($this->{'capab'}->{'euid'})) {
+    } else {
 	$this->senddata(join(' ',
-	":".$user->server->name,
-	"CLIENT",
+	":".$user->server->sid,
+	"UID",
 	$user->nick,
 	$server->hops+1,
 	$user->time_create,
@@ -131,81 +133,106 @@ sub setupaslocal {
 	$user->username,
 	$user->host,
 	$user->ip,
-	$user->nick,
+	$user->uid,
 	":".$user->ircname)."\r\n");
 	$this->senddata(join(' ',
-	":".$user->nick,
+	":".$user->uid,
 	"ENCAP",
 	"*",
 	"REALHOST",
-	$user->host)."\r\n");			
+	$user->host)."\r\n");
+    }
+
+	foreach my $channel (values(%{$user->channels()})) {
+		if ($channel->{name} !~ /^\&/) { 
+		$this->senddata(join(' ',
+			":".$user->nick,
+			"JOIN",
+			$channel->{'name'},
+			$channel->{'jointime'}->{$user->nick})."\r\n");
+		}
+	}
+			
   }
 
+  # Burst channel modes and topics
   foreach my $channel (values(%{Utils::channels()})) {
-	my $users = $channel->{'users'};
-	my($users,$modes,$cargs,$uid,$modestr);
-	if ($channel->ismode('k')) { $modes .= "k"; $cargs .= " ".$channel->{'key'}; }
-	if ($channel->ismode('l')) { $modes .= "l"; $cargs .= " ".$channel->{'limit'}; }
-	if ($channel->ismode('L')) { $modes .= "L"; $cargs .= " ".$channel->{'link'}; }
-	if ($channel->ismode('i')) { $modes .= "i"; }
-	if ($channel->ismode('m')) { $modes .= "m"; }
-	if ($channel->ismode('n')) { $modes .= "n"; }
-	if ($channel->ismode('s')) { $modes .= "s"; }
-	if ($channel->ismode('t')) { $modes .= "t"; }
-	foreach my $user ($channel->users()) {
-		$uid = $user->{'nick'};
-		if ($channel->hasvoice($user)) { $uid = "+$uid"; }
-		if ($channel->ishalfop($user)) { $uid = "\%$uid"; }
-		if ($channel->isop($user))     { $uid = "\@$uid"; }
-		if ($channel->isadmin($user))  { $uid = "&$uid"; }
-		if ($channel->isowner($user))  { $uid = "~$uid"; }
-		$users .= " ".$uid;
-		$server = $user->server;
+	if ($channel->{name} !~ /^\&/) { # we don't want to send information about local channels :P
+    # :server.name BC #channel creationtime modestr modeargs
+    # as of June 27th 2010, we burst multiple prefixes as well as channel modes
+    # we now burst ~ & and % as well.
+	#here we check if each mode is set
+	my $cmodes = "";
+	my $cargs = "";
+	if ($channel->ismode("i")) { $cmodes = $cmodes."i"; }
+	if ($channel->ismode("m")) { $cmodes = $cmodes."m"; }
+	if ($channel->ismode("n")) { $cmodes = $cmodes."n"; }
+	if ($channel->ismode("s")) { $cmodes = $cmodes."s"; }
+	if ($channel->ismode("t")) { $cmodes = $cmodes."t"; }
+	if ($channel->ismode("k")) {
+		$cmodes = $cmodes."k";
+		$cargs = $cargs." ".$channel->{key};
 	}
-		$cargs = ltrim($cargs);
-		if ($cargs eq "" || $cargs eq " ") { $modestr = "+$modes"; } else { $modestr = "+$modes $cargs"; }
-		$this->senddata(join(' ',
-			":".$server->{'name'},
-			"SJOIN",
-			time,
-			$channel->{'name'},
-			$modestr,
-			":".ltrim($users)."\r\n"
-		));
-	my ($bans,$mutes);
-	foreach my $ban ($channel->bans()) {
-		$bans .= " ".$ban;
+	if ($channel->ismode("l")) {
+		$cmodes = $cmodes."l";
+		$cargs = $cargs." ".$channel->{limit};
 	}
-		$this->senddata(join(' ',
-			":".$server->{'name'},
-			"BMASK",
-			time,
-			$channel->{'name'},
-			'b',
-			":".ltrim($bans)."\r\n"
-		)) if ($bans ne "");
-	foreach my $mute ($channel->mutes()) {
-		$mutes .= " ".$mute;
+	if ($channel->ismode("L")) {
+		$cmodes = $cmodes."L";
+		$cargs = $cargs." ".$channel->{link};
 	}
-		$this->senddata(join(' ',
-			":".$server->{'name'},
-			"BMASK",
-			time,
-			$channel->{'name'},
-			'Z',
-			":".ltrim($mutes)."\r\n"
-		)) if ($mutes ne "");
-		
-		$this->senddata(join(' ',
-			":".$server->{'name'},
-			"TB",
-			$channel->{'name'},
-			$channel->{'topicsettime'},
-			$channel->{'topicsetter'},
-			":".$channel->{'topic'}."\r\n"
-		)) if ($channel->{'topic'} ne "");
-  }
+	foreach(keys(%{$channel->{'bans'}})) {
+		$cmodes = $cmodes."b";
+		$cargs = $cargs." ".$_;
+	}
+	foreach(keys(%{$channel->{'mutes'}})) {
+		$cmodes = $cmodes."Z";
+		$cargs = $cargs." ".$_;
+	}
+	foreach(keys(%{$channel->{'owners'}})) {
+		$cmodes = $cmodes."q";
+		$cargs = $cargs." ".$_;
+	}
+	foreach(keys(%{$channel->{'admins'}})) {
+		$cmodes = $cmodes."a";
+		$cargs = $cargs." ".$_;
+	}
+	foreach(keys(%{$channel->{'ops'}})) {
+		$cmodes = $cmodes."o";
+		$cargs = $cargs." ".$_;
+	}
+	foreach(keys(%{$channel->{'halfops'}})) {
+		$cmodes = $cmodes."h";
+		$cargs = $cargs." ".$_;
+	}
+	foreach(keys(%{$channel->{'voices'}})) {
+		$cmodes = $cmodes."v";
+		$cargs = $cargs." ".$_;
+	}
+# I was so excited when i erased BU and BC! :D
 
+	if ($cmodes ne "") {
+	$this->senddata(join(' ',
+		":".$this->parent->name,
+		"MODE",
+		$channel->{name},
+		"+$cmodes",
+		ltrim($cargs))."\r\n");
+	}
+
+	if (defined($channel->{topic})) {
+	$this->senddata(join(' ',
+		":".$this->parent->name,
+		"TOPIC",
+		$channel->{name},
+		$channel->{topicsetter},
+		$channel->{topicsettime},
+		":".$channel->{topic})."\r\n");
+	}
+	}
+
+  }
+  $this->senddata(join(' ', ":".$server->name." EOS\r\n"));
 }
 
 sub spewchildren {
@@ -262,7 +289,7 @@ sub handle_ping {
   my $this = shift;
   my($from,$command,$arg) = split(/\s+/,shift,3);
   $arg =~ s/^://;
-  $this->senddata(":".$this->name." PONG :$arg\r\n");
+  $this->senddata(":".$this->sid." PONG :$arg\r\n");
 }
 
 # :remote PONG :string
@@ -306,48 +333,33 @@ sub handle_burstchannel {
   }
 }
 
-sub handle_uid {
-  my $this = shift;
-  my $line = shift;
-  $line =~ /^:(\S+)/;
-  my $from = Utils::lookup($1);
-  if(!ref($from)) {
-    Utils::plog("lred","error","network desyncage on client introduction");
-    return;
-  }
-  if($from->isa("Server")) {
-    my($remote,$command,$nick,$hopcount,$timestamp,$usermodes,$username,$hostname,$ip,$gecos) = split(/\s+/,$line,9);
-    # The user will add itself to the appropriate server itself
-    my $user = User->new({ 'nick' => $nick,
-			   'user' => $username,
-			   'host' => $hostname,
-			     'ip' => $ip,
-		    'time_create' => time,
-		      	  'modes' => $usermodes,
-			'ircname' => $gecos,
-			 'server' => $from,
-		      'connected' => $timestamp });
-    Utils::users()->{$user->nick()} = $user;
-  } elsif($from->isa("User")) {
-    # User is attempting to change their nick
-    my($nick,$command,$newnick) = split(/\s+/,$line,3);
-  } else {my($nick,$command,$newnick) = split(/\s+/,$line,3);
-    # network weirdness
-  }
-}
-
+# :remote NICK nick hopcount timestamp username hostname servername ircname
 sub handle_nick {
   my $this = shift;
   my $line = shift;
   $line =~ /^:(\S+)/;
   my $from = Utils::lookup($1);
-	if ($from->isa("User")) {
-		my($nick,$command,$newnick) = split(/\s+/,$line,3);
-	}
-	else {
-		my($nick,$command,$newnick) = split(/\s+/,$line,3);
-		Utils::plog("lred","warning","non-user attempting to change its nick - are you using our formal linking protocol?");
-	}
+  if(!ref($from)) {
+    # network desyncage.
+    return;
+  }
+  if($from->isa("Server")) {
+    my($remote,$command,$nick,$hopcount,$timestamp,$username,$hostname,
+       $servername,$ircname) = split(/\s+/,$line,9);
+    # The user will add itself to the appropriate server itself
+    my $user = User->new({ 'nick' => $nick,
+			   'user' => $username,
+			   'host' => $hostname,
+			   'ircname' => $ircname,
+			   'server' => Utils::lookup($servername),
+			   'connected' => $timestamp });
+    Utils::users()->{$user->nick()} = $user;
+  } elsif($from->isa("User")) {
+    # User is attempting to change their nick
+    my($nick,$command,$newnick) = split(/\s+/,$line,3);
+  } else {
+    # network weirdness
+  }
 }
 
 # :nick KILL target :excuse
@@ -375,15 +387,15 @@ sub handle_quit {
 
 sub handle_mode {
   my $this = shift;
-  my($ref,$command,$mode) = split(/\s+/,shift,3);
+  my($nick,$command,$mode) = split(/\s+/,shift,3);
   # redistribute the quit message to other servers
-  $ref =~ s/^://;
+  $nick =~ s/^://;
   $mode =~ s/^://;
   my @s = split(" ",$mode,3);
-  my $from = Utils::lookup($ref);
+  my $user = Utils::lookup($nick);
   my $channel = Utils::lookup($s[0]);
   my @arguments = split(" ",$s[2]);
-  $channel->mode($ref,$s[1],@arguments);
+  $channel->mode($user,$s[1],@arguments);
 }
 
 
@@ -391,7 +403,7 @@ sub handle_privmsg { # added on june 27, 2010 :)
   my $this = shift;
   my($nick,$command,$msg) = split(/\s+/,shift,3);
   $nick =~ s/^://;
-  my @s = split(" ",$msg,2);
+  my @s = split(" ",$msg);
   my $user = Utils::lookup($nick);
   my $channel = Utils::lookup($s[0]);
   my $message = $s[1];
@@ -495,9 +507,12 @@ sub squit {
 sub nick {
   my $this = shift;
   my $user = shift;
+    if (defined($this->{'capab'}->{'euid'})) {
+	# TODO
+    } else {
 	$this->senddata(join(' ',
-	":".$user->server->name,
-	"CLIENT",
+	":".$user->server->sid,
+	"UID",
 	$user->nick,
 	$user->server->hops+1,
 	$user->time_create,
@@ -505,14 +520,15 @@ sub nick {
 	$user->username,
 	$user->host,
 	$user->ip,
+	$user->uid,
 	":".$user->ircname)."\r\n");
-#	$this->senddata(join(' ',
-#	":".$user->uid,
-#	"ENCAP",
-#	"*",
-#	"REALHOST",
-#	$user->host)."\r\n");
-# I gave up on TS6
+	$this->senddata(join(' ',
+	":".$user->uid,
+	"ENCAP",
+	"*",
+	"REALHOST",
+	$user->host)."\r\n");
+    }
 }
 
 # Takes a user and their excuse as the arguments and informs
@@ -529,20 +545,16 @@ sub uquit {
 
 ###############
 # Channel state
+
 sub join {
   my $this    = shift;
   my $user    = shift;
   my $channel = shift;
-	$this->senddata(join(' ',
-		":".$user->server->{'name'},
-		"SJOIN",
-		time,
-		$channel->{'name'},
-		"+nt",
-		":@".$user->{'nick'}."\r\n"
-	));
+  $this->senddata(join(' ',
+		       ":".$user->nick,
+		       "JOIN",
+		       $channel->{'name'})."\r\n");
 }
-
 
 sub part {
   my $this    = shift;
@@ -551,8 +563,7 @@ sub part {
   $this->senddata(join(' ',
 		       ":".$user->nick,
 		       "PART",
-		       $channel->{'name'}),
-		       ":Leaving\r\n");
+		       $channel->{'name'})."\r\n");
 }
 
 sub mode {
@@ -602,6 +613,11 @@ sub name {
   my $this = shift;
   return $this->{'name'};
 }
+sub sid {
+  my $this = shift;
+  return $this->{'sid'};
+}
+
 sub description {
   my $this = shift;
   return $this->{'description'};
